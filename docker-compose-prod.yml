@@ -1,0 +1,127 @@
+version: '3'
+services:
+  # frontend vuejs
+  front:
+    build:
+      context: ./time_manager_front
+      dockerfile: Dockerfile-prod
+    # bind host machine port 8080 to the 8080 port of the container
+    ports:
+      - "8080:80"
+    # specify network so frontend can't access directly to the database
+    networks:
+      - front-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+
+  back:
+    build:
+      context: ./time_manager_api
+    # bind host machine port 3000 to the 3000 port of the container
+    ports:
+      - "3000:3000"
+      - "3001:8443"
+    # using env variable to speed up API as it is advised in documentation
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET="4h4PgYCWknlw176E"
+      - HTTPS_ENABLED=true
+    networks:
+      - back-network
+      - front-network
+    # using volume so we don't have to rebuild container after code modifications
+    volumes:
+      - ./time_manager_api:/usr/app/time_manager/
+      - /usr/app/time_manager/node_modules
+      - /etc/letsencrypt/archive/timepool.me:/ssl
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  bdd:
+    image: postgres:latest
+    # postgres env variable to create gotham db so the API doesn't have to
+    environment:
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_PASSWORD=postgres"
+      - "POSTGRES_DB=gotham"
+    expose:
+      - 5432
+    networks:
+      - back-network
+    # volume for persistent database data
+    volumes: 
+      - gotham-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  bdd_exporter:
+    image: wrouesnel/postgres_exporter
+    depends_on:
+      - bdd
+    networks:
+      - back-network
+    environment:
+      - "DATA_SOURCE_URI=bdd:5432/postgres?sslmode=disable"
+      - "DATA_SOURCE_USER=postgres"
+      - "DATA_SOURCE_PASS=postgres"
+    expose:
+      - 9187
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "3"
+
+  cadvisor:
+    image: google/cadvisor:latest
+    expose:
+    - 8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - back-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "3"
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+     - "9090:9090"
+    networks:
+      - back-network
+    volumes:
+      - ./prometheus:/etc/prometheus/
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "3"
+
+networks:
+  back-network:
+  front-network:
+
+volumes:
+  gotham-data:

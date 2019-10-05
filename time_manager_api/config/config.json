@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "postgres",
+    "database": "gotham",
+    "host": "bdd",
+    "dialect": "postgres",
+    "seederStorage": "sequelize"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "postgres",
+    "database": "gotham",
+    "host": "bdd",
+    "dialect": "postgres",
+    "seederStorage": "sequelize"
+  },
+  "production": {
+    "username": "postgres",
+    "password": "postgres",
+    "database": "gotham",
+    "host": "bdd",
+    "dialect": "postgres",
+    "seederStorage": "sequelize"
+  }
+}

@@ -1,0 +1,25 @@
+FROM node:lts-alpine as build
+
+# installe un simple serveur http pour servir un contenu statique
+# définit le dossier 'app' comme dossier de travail
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+
+# copie 'package.json'
+COPY package.json .
+
+# installe les dépendances du projet
+RUN npm install
+
+# copie les fichiers et dossiers du projet dans le dossier de travail (par exemple : le dossier 'app')
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx/nginx.conf /etc/nginx/conf.d
+ENV TZ=Europe/Paris
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
