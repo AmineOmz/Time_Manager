@@ -20,7 +20,7 @@
     "jwt-decode": "^2.2.0",
     "luxon": "^1.19.3",
     "mdbvue": "^5.8.2",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "sweetalert2": "^8.17.6",
     "vue": "^2.6.10",
     "vue-clickaway": "2.2.2",
