@@ -18,7 +18,7 @@
     "google-maps": "3.3.0",
     "jquery": "^3.4.1",
     "jwt-decode": "^2.2.0",
-    "luxon": "^1.19.3",
+    "luxon": "^1.28.1",
     "mdbvue": "^5.8.2",
     "moment": "^2.24.0",
     "sweetalert2": "^8.17.6",
